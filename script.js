@@ -147,16 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 );
 
 
-                if (currentLength < originalLength * 0.99) {
-                    drawArrow(
-                        ctx,
-                        bodyA.position.x,
-                        bodyA.position.y,
-                        bodyB.position.x,
-                        bodyB.position.y,
-                        '#darkgray',
-                        ''
-                    );
+                const stress = Math.min(1, Math.abs(currentLength - originalLength) / 5);
+                if (stress > 0.1) {
+                    drawStress(ctx, bodyA.position, bodyB.position, stress, currentLength < originalLength);
                 }
             }
         });
@@ -277,30 +270,18 @@ document.addEventListener('DOMContentLoaded', () => {
             // Draw tension in main cable
             for (let i = 0; i < cable.constraints.length; i++) {
                 const constraint = cable.constraints[i];
-                drawArrow(
-                    ctx,
-                    constraint.bodyA.position.x,
-                    constraint.bodyA.position.y,
-                    constraint.bodyB.position.x,
-                    constraint.bodyB.position.y,
-                    '#lightgray',
-                    ''
-                );
+                const stress = Math.min(1, constraint.length / 100);
+                drawStress(ctx, constraint.bodyA.position, constraint.bodyB.position, stress, true);
             }
 
             // Draw tension in suspenders
             for (let i = 0; i < deck.constraints.length; i++) {
                 const constraint = deck.constraints[i];
                 if(constraint.render.strokeStyle) { // only for suspenders
-                    drawArrow(
-                        ctx,
-                        constraint.bodyA.position.x + constraint.pointA.x,
-                        constraint.bodyA.position.y + constraint.pointA.y,
-                        constraint.bodyB.position.x + constraint.pointB.x,
-                        constraint.bodyB.position.y + constraint.pointB.y,
-                        '#lightgray',
-                        ''
-                    );
+                    const stress = Math.min(1, constraint.length / 50);
+                    const start = { x: constraint.bodyA.position.x + constraint.pointA.x, y: constraint.bodyA.position.y + constraint.pointA.y };
+                    const end = { x: constraint.bodyB.position.x + constraint.pointB.x, y: constraint.bodyB.position.y + constraint.pointB.y };
+                    drawStress(ctx, start, end, stress, true);
                 }
             }
         });
@@ -398,14 +379,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const difference = currentLength - initialLength;
 
 
-                if (Math.abs(difference) > 0.1) {
-                    if (difference > 0) {
-                        constraint.render.strokeStyle = '#lightgray'; // Tension
-                    } else {
-                        constraint.render.strokeStyle = '#darkgray'; // Compression
-                    }
-                } else {
-                    constraint.render.strokeStyle = '#888'; // Neutral
+                const stress = Math.min(1, Math.abs(difference) / 2);
+                if (stress > 0.05) {
+                    drawStress(ctx, bodyA.position, bodyB.position, stress, difference > 0);
                 }
             }
         });
@@ -465,9 +441,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const bodyB = constraint.bodyB;
 
                 // Simplified bending moment visualization
+                const stress = Math.min(1, Math.abs(bodyB.position.y - bodyA.position.y) / 10);
                 // Tension on top, compression on bottom
-                drawArrow(ctx, bodyA.position.x, bodyA.position.y - beamHeight / 2, bodyB.position.x, bodyB.position.y - beamHeight / 2, '#lightgray', '');
-                drawArrow(ctx, bodyA.position.x, bodyA.position.y + beamHeight / 2, bodyB.position.x, bodyB.position.y + beamHeight / 2, '#darkgray', '');
+                const start1 = { x: bodyA.position.x, y: bodyA.position.y - beamHeight / 2 };
+                const end1 = { x: bodyB.position.x, y: bodyB.position.y - beamHeight / 2 };
+                drawStress(ctx, start1, end1, stress, true);
+                const start2 = { x: bodyA.position.x, y: bodyA.position.y + beamHeight / 2 };
+                const end2 = { x: bodyB.position.x, y: bodyB.position.y + beamHeight / 2 };
+                drawStress(ctx, start2, end2, stress, false);
             }
         });
     }
@@ -534,18 +515,29 @@ document.addEventListener('DOMContentLoaded', () => {
         Matter.Events.on(engine, 'afterUpdate', () => {
             const ctx = render.context;
             // Tension in tie
-            drawArrow(ctx, tie.bodyA.position.x + tie.pointA.x, tie.bodyA.position.y + tie.pointA.y, tie.bodyB.position.x + tie.pointB.x, tie.bodyB.position.y + tie.pointB.y, '#lightgray', 'Tension');
+            const tieStress = Math.min(1, tie.length / 200);
+            const tieStart = { x: tie.bodyA.position.x + tie.pointA.x, y: tie.bodyA.position.y + tie.pointA.y };
+            const tieEnd = { x: tie.bodyB.position.x + tie.pointB.x, y: tie.bodyB.position.y + tie.pointB.y };
+            drawStress(ctx, tieStart, tieEnd, tieStress, true);
 
             // Tension in cable
-            drawArrow(ctx, cable.bodyA.position.x + cable.pointA.x, cable.bodyA.position.y + cable.pointA.y, cable.bodyB.position.x + cable.pointB.x, cable.bodyB.position.y + cable.pointB.y, '#lightgray', 'Tension');
+            const cableStress = Math.min(1, cable.length / 100);
+            const cableStart = { x: cable.bodyA.position.x + cable.pointA.x, y: cable.bodyA.position.y + cable.pointA.y };
+            const cableEnd = { x: cable.bodyB.position.x + cable.pointB.x, y: cable.bodyB.position.y + cable.pointB.y };
+            drawStress(ctx, cableStart, cableEnd, cableStress, true);
 
             // Bending in arm
             for (let i = 0; i < arm.constraints.length; i++) {
                 const constraint = arm.constraints[i];
                 const bodyA = constraint.bodyA;
                 const bodyB = constraint.bodyB;
-                drawArrow(ctx, bodyA.position.x, bodyA.position.y - 7.5, bodyB.position.x, bodyB.position.y - 7.5, '#lightgray', ''); // Tension
-                drawArrow(ctx, bodyA.position.x, bodyA.position.y + 7.5, bodyB.position.x, bodyB.position.y + 7.5, '#darkgray', ''); // Compression
+                const stress = Math.min(1, Math.abs(bodyB.position.y - bodyA.position.y) / 5);
+                const start1 = { x: bodyA.position.x, y: bodyA.position.y - 7.5 };
+                const end1 = { x: bodyB.position.x, y: bodyB.position.y - 7.5 };
+                drawStress(ctx, start1, end1, stress, true); // Tension
+                const start2 = { x: bodyA.position.x, y: bodyA.position.y + 7.5 };
+                const end2 = { x: bodyB.position.x, y: bodyB.position.y + 7.5 };
+                drawStress(ctx, start2, end2, stress, false); // Compression
             }
         });
     }
@@ -617,8 +609,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const bodyB = constraint.bodyB;
 
                 // Simplified bending moment visualization
-                drawArrow(ctx, bodyA.position.x, bodyA.position.y - beamHeight / 2, bodyB.position.x, bodyB.position.y - beamHeight / 2, '#lightgray', ''); // Tension
-                drawArrow(ctx, bodyA.position.x, bodyA.position.y + beamHeight / 2, bodyB.position.x, bodyB.position.y + beamHeight / 2, '#darkgray', ''); // Compression
+                const stress = Math.min(1, Math.abs(bodyB.position.y - bodyA.position.y) / 10);
+                const start1 = { x: bodyA.position.x, y: bodyA.position.y - beamHeight / 2 };
+                const end1 = { x: bodyB.position.x, y: bodyB.position.y - beamHeight / 2 };
+                drawStress(ctx, start1, end1, stress, true); // Tension
+                const start2 = { x: bodyA.position.x, y: bodyA.position.y + beamHeight / 2 };
+                const end2 = { x: bodyB.position.x, y: bodyB.position.y + beamHeight / 2 };
+                drawStress(ctx, start2, end2, stress, false); // Compression
             }
         });
     }
@@ -672,47 +669,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Simple check for contact
             if (load.position.y > pillar.position.y - 150) {
-                drawArrow(
-                    ctx,
-                    pillar.position.x,
-                    pillar.position.y - 80,
-                    pillar.position.x,
-                    pillar.position.y + 80,
-                    '#darkgray',
-                    'Compression'
-                );
+                const stress = Math.min(1, (load.position.y - (pillar.position.y - 150)) / 100);
+                const start = { x: pillar.position.x, y: pillar.position.y - 90 };
+                const end = { x: pillar.position.x, y: pillar.position.y + 90 };
+                drawStress(ctx, start, end, stress, false);
             }
         });
     }
 
-    function drawArrow(ctx, fromx, fromy, tox, toy, color, label) {
-        const headlen = 10; // length of head in pixels
-        const dx = tox - fromx;
-        const dy = toy - fromy;
-        const angle = Math.atan2(dy, dx);
+    function drawStress(ctx, start, end, stress, isTension) {
+        const mid = { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 };
+        const length = Matter.Vector.magnitude(Matter.Vector.sub(end, start));
+        const angle = Math.atan2(end.y - start.y, end.x - start.x);
 
+        const r = Math.floor(255 * stress);
+        const g = Math.floor(255 * (1 - stress));
+        const color = `rgb(${r},${g},0)`;
+
+        ctx.save();
+        ctx.translate(mid.x, mid.y);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.moveTo(-length / 2, 0);
+        ctx.lineTo(length / 2, 0);
+        ctx.lineWidth = 5 + stress * 10;
         ctx.strokeStyle = color;
-        ctx.fillStyle = color;
-        ctx.lineWidth = 2;
-
-        //drawing the line
-        ctx.beginPath();
-        ctx.moveTo(fromx, fromy);
-        ctx.lineTo(tox, toy);
         ctx.stroke();
-
-        //drawing the head
-        ctx.beginPath();
-        ctx.moveTo(tox, toy);
-        ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
-        ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
-        ctx.closePath();
-        ctx.fill();
-
-        // Add label
-        ctx.font = '14px Arial';
-        ctx.fillStyle = 'white';
-        ctx.fillText(label, fromx + 15, fromy + dy / 2);
+        ctx.restore();
     }
 
 
@@ -876,11 +859,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 );
                 const difference = currentLength - beam.length;
 
-                if (Math.abs(difference) > 2) {
-                     if (difference > 0) {
-                        beam.render.strokeStyle = '#lightgray'; // Tension
+                const stress = Math.min(1, Math.abs(difference) / 10);
+                if (stress > 0.1) {
+                    if (difference > 0) {
+                        beam.render.strokeStyle = `rgb(${255 * stress}, ${255 * (1-stress)}, 0)`; // Tension
                     } else {
-                        beam.render.strokeStyle = '#darkgray'; // Compression
+                        beam.render.strokeStyle = `rgb(${255 * stress}, ${255 * (1-stress)}, 0)`; // Compression
                     }
                 } else {
                     beam.render.strokeStyle = '#888'; // Neutral

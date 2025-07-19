@@ -56,6 +56,18 @@ body {
     font-size: 0.9em;
 }
 
+#legend {
+    margin-top: 20px;
+}
+
+.color-box {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    margin-right: 5px;
+    border: 1px solid #555;
+}
+
 #simulation-container {
     flex-grow: 1;
     position: relative;
