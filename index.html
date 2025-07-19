@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Structural Force Visualizer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="sidebar">
+        <h1>Structural Visualizer</h1>
+        <h2>Structures</h2>
+        <button class="structure-btn" data-structure="pillar">Pillar</button>
+        <button class="structure-btn" data-structure="arch-bridge">Arch Bridge</button>
+        <button class="structure-btn" data-structure="suspension-bridge">Suspension Bridge</button>
+        <button class="structure-btn" data-structure="truss-bridge">Truss Bridge</button>
+        <button class="structure-btn" data-structure="cantilever-beam">Cantilever Beam</button>
+        <button class="structure-btn" data-structure="crane-arm">Crane Arm</button>
+        <button class="structure-btn" data-structure="girder-bridge">Girder Bridge</button>
+        <h2>Bridge Builder</h2>
+        <button id="bridge-builder-btn">Create Your Own</button>
+        <div id="builder-instructions" style="display: none;">
+            <h3>Instructions:</h3>
+            <p>Click to create a node.</p>
+            <p>Click and drag from a node to create a beam.</p>
+            <p>Ctrl+Click to create a static (fixed) node.</p>
+            <p>Click "Simulate" to test your bridge.</p>
+        </div>
+    </div>
+    <div id="simulation-container"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.17.1/matter.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

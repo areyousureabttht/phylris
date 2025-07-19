@@ -1,0 +1,67 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    background-color: #000;
+}
+
+#sidebar {
+    width: 200px;
+    background-color: #111;
+    color: #fff;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+#sidebar h2 {
+    margin-top: 0;
+}
+
+.structure-btn, #bridge-builder-btn {
+    background-color: #333;
+    color: #fff;
+    border: 1px solid #555;
+    padding: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.structure-btn:hover, #bridge-builder-btn:hover {
+    background-color: #555;
+}
+
+#sidebar h1 {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+}
+
+#builder-instructions {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #555;
+    border-radius: 5px;
+}
+
+#builder-instructions h3 {
+    margin-top: 0;
+}
+
+#builder-instructions p {
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+#simulation-container {
+    flex-grow: 1;
+    position: relative;
+    background-color: #000;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
