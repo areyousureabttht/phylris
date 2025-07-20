@@ -17,6 +17,9 @@
         <button class="structure-btn" data-structure="cantilever-beam">Cantilever Beam</button>
         <button class="structure-btn" data-structure="crane-arm">Crane Arm</button>
         <button class="structure-btn" data-structure="girder-bridge">Girder Bridge</button>
+        <button class="structure-btn" data-structure="beam-bridge">Beam Bridge</button>
+        <button class="structure-btn" data-structure="cable-stayed-bridge">Cable-Stayed Bridge</button>
+        <button class="structure-btn" data-structure="tied-arch-bridge">Tied-Arch Bridge</button>
         <h2>Bridge Builder</h2>
         <button id="bridge-builder-btn">Create Your Own</button>
         <div id="builder-instructions" style="display: none;">
@@ -30,6 +33,23 @@
             <h3>Legend</h3>
             <p><span class="color-box" style="background-color: rgb(0, 255, 0);"></span> Low Stress</p>
             <p><span class="color-box" style="background-color: rgb(255, 0, 0);"></span> High Stress</p>
+        </div>
+        <div id="budget-container">
+            <h3>Budget</h3>
+            <p>$<span id="budget">10000</span></p>
+        </div>
+        <div id="materials-container">
+            <h3>Materials</h3>
+            <button class="material-btn" data-material="wood">Wood</button>
+            <button class="material-btn" data-material="steel">Steel</button>
+        </div>
+        <div id="levels-container">
+            <h3>Levels</h3>
+            <select id="level-select">
+                <option value="0">Custom</option>
+                <option value="1">Level 1</option>
+                <option value="2">Level 2</option>
+            </select>
         </div>
     </div>
     <div id="simulation-container"></div>

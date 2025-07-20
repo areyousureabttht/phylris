@@ -56,6 +56,15 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'girder-bridge':
                 loadGirderBridge();
                 break;
+            case 'beam-bridge':
+                loadBeamBridge();
+                break;
+            case 'cable-stayed-bridge':
+                loadCableStayedBridge();
+                break;
+            case 'tied-arch-bridge':
+                loadTiedArchBridge();
+                break;
             // Add cases for other structures here
         }
     }
@@ -152,6 +161,253 @@ document.addEventListener('DOMContentLoaded', () => {
                     drawStress(ctx, bodyA.position, bodyB.position, stress, currentLength < originalLength);
                 }
             }
+        });
+    }
+
+    function loadTiedArchBridge() {
+        const bridgeY = simulationContainer.clientHeight - 100;
+        const bridgeWidth = 500;
+        const archRadius = 250;
+        const numSegments = 12;
+
+        const arch = Matter.Composite.create();
+        const deck = Matter.Composite.create();
+
+        // Create arch
+        for (let i = 0; i <= numSegments; i++) {
+            const angle = -Math.PI + (i / numSegments) * Math.PI;
+            const x = simulationContainer.clientWidth / 2 + archRadius * Math.cos(angle);
+            const y = bridgeY + archRadius * Math.sin(angle);
+            const segment = Matter.Bodies.circle(x, y, 10, { isStatic: i === 0 || i === numSegments, render: { fillStyle: '#555' } });
+            Matter.Composite.add(arch, segment);
+        }
+
+        for (let i = 0; i < arch.bodies.length - 1; i++) {
+            const constraint = Matter.Constraint.create({
+                bodyA: arch.bodies[i],
+                bodyB: arch.bodies[i + 1],
+                stiffness: 0.9
+            });
+            Matter.Composite.add(arch, constraint);
+        }
+
+        // Create deck (the "tie")
+        const tie = Matter.Composites.stack(
+            (simulationContainer.clientWidth - bridgeWidth) / 2,
+            bridgeY,
+            10,
+            1,
+            0,
+            0,
+            (x, y) => {
+                return Matter.Bodies.rectangle(x, y, bridgeWidth / 10, 15, { render: { fillStyle: '#555' } });
+            }
+        );
+        Matter.Composites.chain(tie, 0.5, 0, -0.5, 0, { stiffness: 1 });
+        Matter.Composite.add(deck, tie);
+
+        // Add vertical suspenders
+        for (let i = 1; i < numSegments; i++) {
+             const suspender = Matter.Constraint.create({
+                bodyA: arch.bodies[i],
+                bodyB: tie.bodies[Math.floor(i * (10/numSegments))],
+                stiffness: 0.5,
+                render: { strokeStyle: '#ccc', lineWidth: 1 }
+            });
+            Matter.Composite.add(deck, suspender);
+        }
+
+        Matter.World.add(engine.world, [arch, deck]);
+
+        const load = Matter.Bodies.rectangle(
+            simulationContainer.clientWidth / 2,
+            bridgeY - 50,
+            40,
+            40,
+            { render: { fillStyle: '#ccc' } }
+        );
+
+         const mouse = Matter.Mouse.create(render.canvas);
+        const mouseConstraint = Matter.MouseConstraint.create(engine, {
+            mouse: mouse,
+            constraint: {
+                stiffness: 0.2,
+                render: {
+                    visible: false
+                }
+            }
+        });
+
+        Matter.World.add(engine.world, [load, mouseConstraint]);
+
+        Matter.Events.on(engine, 'afterUpdate', () => {
+            const ctx = render.context;
+            // Stress in arch
+            for(let i=0; i<arch.constraints.length; i++) {
+                const constraint = arch.constraints[i];
+                const stress = Math.min(1, Math.abs(constraint.length - 50) / 10);
+                drawStress(ctx, constraint.bodyA.position, constraint.bodyB.position, stress, false);
+            }
+            // Stress in tie
+            for(let i=0; i<tie.constraints.length; i++) {
+                const constraint = tie.constraints[i];
+                const stress = Math.min(1, Math.abs(constraint.length - 50) / 10);
+                drawStress(ctx, constraint.bodyA.position, constraint.bodyB.position, stress, true);
+            }
+        });
+    }
+
+    function loadCableStayedBridge() {
+        const bridgeY = simulationContainer.clientHeight - 100;
+        const bridgeWidth = 500;
+        const bridgeSegments = 10;
+        const segmentWidth = bridgeWidth / bridgeSegments;
+
+        const deck = Matter.Composite.create();
+
+        for (let i = 0; i < bridgeSegments; i++) {
+            const segment = Matter.Bodies.rectangle(
+                (simulationContainer.clientWidth - bridgeWidth) / 2 + i * segmentWidth + segmentWidth / 2,
+                bridgeY,
+                segmentWidth,
+                20,
+                { render: { fillStyle: '#555' } }
+            );
+            Matter.Composite.add(deck, segment);
+        }
+
+        for (let i = 0; i < deck.bodies.length - 1; i++) {
+            const constraint = Matter.Constraint.create({
+                bodyA: deck.bodies[i],
+                bodyB: deck.bodies[i + 1],
+                stiffness: 1
+            });
+            Matter.Composite.add(deck, constraint);
+        }
+
+        const tower = Matter.Bodies.rectangle(
+            simulationContainer.clientWidth / 2,
+            bridgeY - 120,
+            40,
+            240,
+            { isStatic: true, render: { fillStyle: '#333' } }
+        );
+
+        const cables = Matter.Composite.create();
+
+        for (let i = 0; i < bridgeSegments / 2; i++) {
+            const cable1 = Matter.Constraint.create({
+                bodyA: tower,
+                pointA: {x: 0, y: -120 + i * 20},
+                bodyB: deck.bodies[i],
+                stiffness: 0.1,
+                render: { strokeStyle: '#ccc', lineWidth: 2 }
+            });
+            const cable2 = Matter.Constraint.create({
+                bodyA: tower,
+                pointA: {x: 0, y: -120 + i * 20},
+                bodyB: deck.bodies[bridgeSegments - 1 - i],
+                stiffness: 0.1,
+                render: { strokeStyle: '#ccc', lineWidth: 2 }
+            });
+            Matter.Composite.add(cables, [cable1, cable2]);
+        }
+
+        Matter.World.add(engine.world, [deck, tower, cables]);
+
+        const load = Matter.Bodies.rectangle(
+            simulationContainer.clientWidth / 2,
+            bridgeY - 50,
+            40,
+            40,
+            { render: { fillStyle: '#ccc' } }
+        );
+
+        const mouse = Matter.Mouse.create(render.canvas);
+        const mouseConstraint = Matter.MouseConstraint.create(engine, {
+            mouse: mouse,
+            constraint: {
+                stiffness: 0.2,
+                render: {
+                    visible: false
+                }
+            }
+        });
+
+        Matter.World.add(engine.world, [load, mouseConstraint]);
+
+        Matter.Events.on(engine, 'afterUpdate', () => {
+            const ctx = render.context;
+            for (let i = 0; i < cables.constraints.length; i++) {
+                const cable = cables.constraints[i];
+                const stress = Math.min(1, cable.length / 200);
+                const start = { x: cable.bodyA.position.x + cable.pointA.x, y: cable.bodyA.position.y + cable.pointA.y };
+                const end = { x: cable.bodyB.position.x + cable.pointB.x, y: cable.bodyB.position.y + cable.pointB.y };
+                drawStress(ctx, start, end, stress, true);
+            }
+        });
+    }
+
+    function loadBeamBridge() {
+        const bridgeY = simulationContainer.clientHeight - 100;
+        const bridgeWidth = 500;
+        const beamHeight = 20;
+
+        const beam = Matter.Bodies.rectangle(
+            simulationContainer.clientWidth / 2,
+            bridgeY - beamHeight / 2,
+            bridgeWidth,
+            beamHeight,
+            { render: { fillStyle: '#555' } }
+        );
+
+        const support1 = Matter.Bodies.rectangle(
+            (simulationContainer.clientWidth - bridgeWidth) / 2,
+            bridgeY,
+            80,
+            80,
+            { isStatic: true, render: { fillStyle: '#333' } }
+        );
+        const support2 = Matter.Bodies.rectangle(
+            (simulationContainer.clientWidth + bridgeWidth) / 2,
+            bridgeY,
+            80,
+            80,
+            { isStatic: true, render: { fillStyle: '#333' } }
+        );
+
+        Matter.World.add(engine.world, [beam, support1, support2]);
+
+        const load = Matter.Bodies.rectangle(
+            simulationContainer.clientWidth / 2,
+            bridgeY - beamHeight - 30,
+            40,
+            40,
+            { render: { fillStyle: '#ccc' } }
+        );
+
+        const mouse = Matter.Mouse.create(render.canvas);
+        const mouseConstraint = Matter.MouseConstraint.create(engine, {
+            mouse: mouse,
+            constraint: {
+                stiffness: 0.2,
+                render: {
+                    visible: false
+                }
+            }
+        });
+
+        Matter.World.add(engine.world, [load, mouseConstraint]);
+
+        Matter.Events.on(engine, 'afterUpdate', () => {
+            const ctx = render.context;
+            const stress = Math.min(1, Math.abs(beam.position.y - (bridgeY - beamHeight / 2)) / 10);
+            const start1 = { x: beam.position.x - bridgeWidth/2, y: beam.position.y - beamHeight / 2 };
+            const end1 = { x: beam.position.x + bridgeWidth/2, y: beam.position.y - beamHeight / 2 };
+            drawStress(ctx, start1, end1, stress, true); // Tension
+            const start2 = { x: beam.position.x - bridgeWidth/2, y: beam.position.y + beamHeight / 2 };
+            const end2 = { x: beam.position.x + bridgeWidth/2, y: beam.position.y + beamHeight / 2 };
+            drawStress(ctx, start2, end2, stress, false); // Compression
         });
     }
 
@@ -711,6 +967,8 @@ document.addEventListener('DOMContentLoaded', () => {
     structureButtons.forEach(button => {
         button.addEventListener('click', () => {
             builderInstructions.style.display = 'none';
+            document.getElementById('materials-container').style.display = 'none';
+            document.getElementById('budget-container').style.display = 'none';
             const structureType = button.getAttribute('data-structure');
             loadStructure(structureType);
         });
@@ -718,7 +976,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     bridgeBuilderBtn.addEventListener('click', () => {
         builderInstructions.style.display = 'block';
+        document.getElementById('materials-container').style.display = 'block';
+        document.getElementById('budget-container').style.display = 'block';
         loadBridgeBuilder();
+    });
+
+    const materialButtons = document.querySelectorAll('.material-btn');
+    materialButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            currentMaterial = button.getAttribute('data-material');
+            // Optional: Add some visual feedback for the selected material
+            materialButtons.forEach(btn => btn.style.backgroundColor = '#333');
+            button.style.backgroundColor = '#555';
+        });
+    });
+
+    const levelSelect = document.getElementById('level-select');
+    levelSelect.addEventListener('change', (e) => {
+        const level = parseInt(e.target.value);
+        if (level === 0) {
+            // Show all structures
+            structureButtons.forEach(button => button.style.display = 'block');
+            bridgeBuilderBtn.style.display = 'block';
+            document.getElementById('materials-container').style.display = 'none';
+            document.getElementById('budget-container').style.display = 'none';
+            loadBridgeBuilder();
+        } else {
+            // Hide all structures
+            structureButtons.forEach(button => button.style.display = 'none');
+            bridgeBuilderBtn.style.display = 'none';
+            document.getElementById('materials-container').style.display = 'block';
+            document.getElementById('budget-container').style.display = 'block';
+            loadLevel(level);
+        }
     });
 
     function loadBridgeBuilder() {
@@ -729,6 +1019,13 @@ document.addEventListener('DOMContentLoaded', () => {
         let startNode = null;
         const nodes = [];
         const beams = [];
+        let budget = 10000;
+        const budgetDisplay = document.getElementById('budget');
+        const materialCosts = {
+            wood: 100,
+            steel: 300
+        };
+        let currentMaterial = 'wood';
 
         // Add ground
         const ground = Matter.Bodies.rectangle(
@@ -811,12 +1108,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function createBeam(nodeA, nodeB) {
-            return Matter.Constraint.create({
-                bodyA: nodeA,
-                bodyB: nodeB,
-                stiffness: 0.8,
-                render: { strokeStyle: '#888', lineWidth: 4 }
-            });
+            const length = Matter.Vector.magnitude(Matter.Vector.sub(nodeA.position, nodeB.position));
+            const cost = Math.floor(length * (materialCosts[currentMaterial]/100));
+
+            if (budget >= cost) {
+                budget -= cost;
+                budgetDisplay.textContent = budget;
+                return Matter.Constraint.create({
+                    bodyA: nodeA,
+                    bodyB: nodeB,
+                    stiffness: currentMaterial === 'wood' ? 0.5 : 0.9,
+                    render: {
+                        strokeStyle: currentMaterial === 'wood' ? '#8B4513' : '#A9A9A9',
+                        lineWidth: currentMaterial === 'wood' ? 8 : 4
+                    }
+                });
+            }
+            return null;
         }
 
         const simulateBtn = document.createElement('button');
@@ -878,6 +1186,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+    }
+
+    function loadLevel(level) {
+        initMatter();
+        Matter.World.clear(engine.world, false);
+        // Reset budget and materials for levels
+        budget = 10000;
+        budgetDisplay.textContent = budget;
+        currentMaterial = 'wood';
+
+
+        const levels = [
+            {}, // Custom level
+            { // Level 1
+                nodes: [
+                    { x: 100, y: 400, isStatic: true },
+                    { x: 700, y: 400, isStatic: true }
+                ],
+                vehicle: { x: 50, y: 350 }
+            },
+            { // Level 2
+                nodes: [
+                    { x: 100, y: 300, isStatic: true },
+                    { x: 400, y: 500, isStatic: true },
+                    { x: 700, y: 300, isStatic: true }
+                ],
+                vehicle: { x: 50, y: 250 }
+            }
+        ];
+
+        const currentLevel = levels[level];
+        const nodes = currentLevel.nodes.map(node => createNode(node, node.isStatic));
+        nodes.forEach(node => Matter.World.add(engine.world, node));
+
+        if (currentLevel.vehicle) {
+            const vehicle = Matter.Bodies.rectangle(currentLevel.vehicle.x, currentLevel.vehicle.y, 80, 30, {
+                render: { fillStyle: '#f00' }
+            });
+            Matter.World.add(engine.world, vehicle);
+        }
     }
 
     // Initial load (optional, e.g., start with the pillar)
