@@ -7,41 +7,19 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="sidebar">
-        <h1>Structural Visualizer</h1>
-        <h2>Structures</h2>
-        <button class="structure-btn" data-structure="pillar">Pillar</button>
-        <button class="structure-btn" data-structure="arch-bridge">Arch Bridge</button>
-        <button class="structure-btn" data-structure="suspension-bridge">Suspension Bridge</button>
-        <button class="structure-btn" data-structure="truss-bridge">Truss Bridge</button>
-        <button class="structure-btn" data-structure="cantilever-beam">Cantilever Beam</button>
-        <button class="structure-btn" data-structure="crane-arm">Crane Arm</button>
-        <button class="structure-btn" data-structure="girder-bridge">Girder Bridge</button>
-        <button class="structure-btn" data-structure="beam-bridge">Beam Bridge</button>
-        <button class="structure-btn" data-structure="cable-stayed-bridge">Cable-Stayed Bridge</button>
-        <button class="structure-btn" data-structure="tied-arch-bridge">Tied-Arch Bridge</button>
-        <h2>Bridge Builder</h2>
-        <button id="bridge-builder-btn">Create Your Own</button>
-        <div id="builder-instructions" style="display: none;">
-            <h3>Instructions:</h3>
-            <p>Click to create a node.</p>
-            <p>Click and drag from a node to create a beam.</p>
-            <p>Ctrl+Click to create a static (fixed) node.</p>
-            <p>Click "Simulate" to test your bridge.</p>
+    <div id="simulation-container"></div>
+    <div id="toolbar">
+        <div id="tool-select">
+            <button class="tool-btn" data-tool="wood">Wood</button>
+            <button class="tool-btn" data-tool="steel">Steel</button>
+            <button class="tool-btn" data-tool="road">Road</button>
         </div>
-        <div id="legend">
-            <h3>Legend</h3>
-            <p><span class="color-box" style="background-color: rgb(0, 255, 0);"></span> Low Stress</p>
-            <p><span class="color-box" style="background-color: rgb(255, 0, 0);"></span> High Stress</p>
+        <div id="sim-controls">
+            <button id="simulate-btn">Simulate</button>
+            <button id="reset-btn">Reset</button>
         </div>
-        <div id="budget-container">
-            <h3>Budget</h3>
-            <p>$<span id="budget">10000</span></p>
-        </div>
-        <div id="materials-container">
-            <h3>Materials</h3>
-            <button class="material-btn" data-material="wood">Wood</button>
-            <button class="material-btn" data-material="steel">Steel</button>
+        <div id="budget-display">
+            Budget: $<span id="budget">10000</span>
         </div>
         <div id="levels-container">
             <h3>Levels</h3>
@@ -49,10 +27,11 @@
                 <option value="0">Custom</option>
                 <option value="1">Level 1</option>
                 <option value="2">Level 2</option>
+                <option value="3">Level 3</option>
+                <option value="4">Level 4</option>
             </select>
         </div>
     </div>
-    <div id="simulation-container"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.17.1/matter.min.js"></script>
     <script src="script.js"></script>
 </body>

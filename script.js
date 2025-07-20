@@ -1,77 +1,213 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const structureButtons = document.querySelectorAll('.structure-btn');
-    const bridgeBuilderBtn = document.getElementById('bridge-builder-btn');
     const simulationContainer = document.getElementById('simulation-container');
+    const toolButtons = document.querySelectorAll('.tool-btn');
+    const simulateBtn = document.getElementById('simulate-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const budgetDisplay = document.getElementById('budget');
 
     let engine, render;
+    let currentTool = 'wood';
+    let budget = 10000;
 
-    function initMatter() {
-        // Clear the container
-        simulationContainer.innerHTML = '';
+    const materialCosts = {
+        wood: 100,
+        steel: 300,
+        road: 50
+    };
 
-        // Create an engine
-        engine = Matter.Engine.create();
+    toolButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            currentTool = button.getAttribute('data-tool');
+            toolButtons.forEach(btn => btn.style.backgroundColor = '#455A64');
+            button.style.backgroundColor = '#607D8B';
+        });
+    });
 
-        // Create a renderer
-        render = Matter.Render.create({
-            element: simulationContainer,
-            engine: engine,
-            options: {
-                width: simulationContainer.clientWidth,
-                height: simulationContainer.clientHeight,
-                wireframes: false, // Set to false to see fills
-                background: 'transparent' // Use the CSS background
+    simulateBtn.addEventListener('click', () => {
+        // Make all non-static nodes dynamic
+        const bodies = Matter.Composite.allBodies(engine.world);
+        bodies.forEach(body => {
+            if (body.label === 'node' && !body.isStatic) {
+                Matter.Body.setStatic(body, false);
+            }
+        });
+    });
+
+    resetBtn.addEventListener('click', () => {
+        loadBridgeBuilder();
+    });
+
+
+    function loadBridgeBuilder() {
+        initMatter();
+        Matter.World.clear(engine.world, false);
+
+        let isDrawing = false;
+        let startNode = null;
+        const nodes = [];
+        const beams = [];
+        budget = 10000;
+        budgetDisplay.textContent = budget;
+
+
+        // Add ground
+        const ground = Matter.Bodies.rectangle(
+            simulationContainer.clientWidth / 2,
+            simulationContainer.clientHeight - 20,
+            simulationContainer.clientWidth,
+            40,
+            { isStatic: true, render: {fillStyle: '#81C784'} }
+        );
+        Matter.World.add(engine.world, ground);
+
+
+        simulationContainer.addEventListener('mousedown', (e) => {
+            const mousePosition = { x: e.offsetX, y: e.offsetY };
+            const existingNode = findNodeAt(mousePosition);
+
+            if (e.button === 0) { // Left-click
+                if (existingNode) {
+                    isDrawing = true;
+                    startNode = existingNode;
+                } else {
+                    const newNode = createNode(mousePosition, e.ctrlKey); // Ctrl-click for static
+                    nodes.push(newNode);
+                    Matter.World.add(engine.world, newNode);
+                }
             }
         });
 
-        // Run the engine and the renderer
-        Matter.Engine.run(engine);
-        Matter.Render.run(render);
-    }
+        simulationContainer.addEventListener('mousemove', (e) => {
+            if (isDrawing) {
+                const mousePosition = { x: e.offsetX, y: e.offsetY };
+                // Draw a temporary line to show where the beam will go
+                const ctx = render.context;
+                ctx.beginPath();
+                ctx.moveTo(startNode.position.x, startNode.position.y);
+                ctx.lineTo(mousePosition.x, mousePosition.y);
+                ctx.strokeStyle = '#000';
+                ctx.stroke();
+            }
+        });
 
-    function loadStructure(structure) {
-        initMatter();
-        // Clear existing bodies
-        Matter.World.clear(engine.world, false);
+        simulationContainer.addEventListener('mouseup', (e) => {
+            if (isDrawing) {
+                const mousePosition = { x: e.offsetX, y: e.offsetY };
+                let endNode = findNodeAt(mousePosition);
 
-        switch (structure) {
-            case 'pillar':
-                loadPillar();
-                break;
-            case 'arch-bridge':
-                loadArchBridge();
-                break;
-            case 'suspension-bridge':
-                loadSuspensionBridge();
-                break;
-            case 'truss-bridge':
-                loadTrussBridge();
-                break;
-            case 'cantilever-beam':
-                loadCantileverBeam();
-                break;
-            case 'crane-arm':
-                loadCraneArm();
-                break;
-            case 'girder-bridge':
-                loadGirderBridge();
-                break;
-            case 'beam-bridge':
-                loadBeamBridge();
-                break;
-            case 'cable-stayed-bridge':
-                loadCableStayedBridge();
-                break;
-            case 'tied-arch-bridge':
-                loadTiedArchBridge();
-                break;
-            // Add cases for other structures here
+                if (!endNode) {
+                    endNode = createNode(mousePosition, e.ctrlKey);
+                    nodes.push(endNode);
+                    Matter.World.add(engine.world, endNode);
+                }
+
+                const newBeam = createBeam(startNode, endNode);
+                if(newBeam){
+                    beams.push(newBeam);
+                    Matter.World.add(engine.world, newBeam);
+                }
+
+
+                isDrawing = false;
+                startNode = null;
+            }
+        });
+
+        function findNodeAt(position) {
+            for (let i = 0; i < nodes.length; i++) {
+                const node = nodes[i];
+                const distance = Matter.Vector.magnitude(
+                    Matter.Vector.sub(position, node.position)
+                );
+                if (distance < 10) {
+                    return node;
+                }
+            }
+            return null;
         }
-    }
 
-    function loadArchBridge() {
-        const numSegments = 10;
-        const segmentWidth = 30;
+        function createNode(position, isStatic) {
+            return Matter.Bodies.circle(position.x, position.y, 8, {
+                isStatic: isStatic,
+                label: 'node',
+                render: { fillStyle: isStatic ? '#333' : '#ccc' }
+            });
+        }
+
+        function createBeam(nodeA, nodeB) {
+            const length = Matter.Vector.magnitude(Matter.Vector.sub(nodeA.position, nodeB.position));
+            const cost = Math.floor(length * (materialCosts[currentTool] / 100));
+
+            if (budget >= cost) {
+                budget -= cost;
+                budgetDisplay.textContent = budget;
+
+                const isRoad = currentTool === 'road';
+
+                return Matter.Constraint.create({
+                    bodyA: nodeA,
+                    bodyB: nodeB,
+                    stiffness: isRoad ? 1 : (currentTool === 'wood' ? 0.6 : 0.95),
+                    render: {
+                        strokeStyle: isRoad ? '#666' : (currentTool === 'wood' ? '#A0522D' : '#C0C0C0'),
+                        lineWidth: isRoad ? 20 : (currentTool === 'wood' ? 10 : 5),
+                        type: isRoad ? 'line' : 'line'
+                    },
+                    label: isRoad ? 'road' : 'beam'
+                });
+            }
+            return null;
+        }
+
+
+        Matter.Events.on(engine, 'collisionStart', (event) => {
+            const pairs = event.pairs;
+            for (let i = 0; i < pairs.length; i++) {
+                const pair = pairs[i];
+                if (pair.bodyA.label === 'car' && pair.bodyB.label === 'goal') {
+                    alert('You Win!');
+                } else if (pair.bodyB.label === 'car' && pair.bodyA.label === 'goal') {
+                    alert('You Win!');
+                }
+            }
+        });
+
+
+        Matter.Events.on(engine, 'afterUpdate', () => {
+            // Stress visualization
+            for (let i = 0; i < beams.length; i++) {
+                const beam = beams[i];
+                const initialLength = Matter.Vector.magnitude(
+                    Matter.Vector.sub(beam.bodyA.position, beam.bodyB.position)
+                );
+                const currentLength = Matter.Vector.magnitude(
+                    Matter.Vector.sub(beam.bodyA.position, beam.bodyB.position)
+                );
+                const difference = currentLength - beam.length;
+
+                const stress = Math.min(1, Math.abs(difference) / 10);
+                if (stress > 0.1) {
+                    if (difference > 0) {
+                        beam.render.strokeStyle = `rgb(${255 * stress}, ${255 * (1 - stress)}, 0)`; // Tension
+                    } else {
+                        beam.render.strokeStyle = `rgb(${255 * stress}, ${255 * (1 - stress)}, 0)`; // Compression
+                    }
+                } else {
+                    beam.render.strokeStyle = beam.render.strokeStyle; // Keep original color
+                }
+
+                // Break condition
+                if (Math.abs(difference) > 20) {
+                    Matter.World.remove(engine.world, beam);
+                    beams.splice(i, 1);
+                    i--;
+                    alert('Bridge collapsed! You Lose!');
+                }
+            }
+        });
+    }
+    loadBridgeBuilder();
+});
         const segmentHeight = 20;
         const archRadius = 200;
         const archY = simulationContainer.clientHeight - 100;
@@ -1204,7 +1340,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     { x: 100, y: 400, isStatic: true },
                     { x: 700, y: 400, isStatic: true }
                 ],
-                vehicle: { x: 50, y: 350 }
+                vehicle: { x: 50, y: 350 },
+                goal: {x: 750, y: 380}
             },
             { // Level 2
                 nodes: [
@@ -1212,7 +1349,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     { x: 400, y: 500, isStatic: true },
                     { x: 700, y: 300, isStatic: true }
                 ],
-                vehicle: { x: 50, y: 250 }
+                vehicle: { x: 50, y: 250 },
+                goal: {x: 750, y: 280}
+            },
+            { // Level 3
+                nodes: [
+                    { x: 100, y: 400, isStatic: true },
+                    { x: 700, y: 400, isStatic: true }
+                ],
+                vehicle: { x: 50, y: 350 },
+                goal: {x: 750, y: 380},
+                budget: 5000
+            },
+            { // Level 4
+                nodes: [
+                    { x: 150, y: 350, isStatic: true },
+                    { x: 650, y: 350, isStatic: true }
+                ],
+                vehicle: { x: 50, y: 300 },
+                goal: {x: 750, y: 330},
+                budget: 8000
             }
         ];
 
@@ -1221,11 +1377,56 @@ document.addEventListener('DOMContentLoaded', () => {
         nodes.forEach(node => Matter.World.add(engine.world, node));
 
         if (currentLevel.vehicle) {
-            const vehicle = Matter.Bodies.rectangle(currentLevel.vehicle.x, currentLevel.vehicle.y, 80, 30, {
-                render: { fillStyle: '#f00' }
-            });
-            Matter.World.add(engine.world, vehicle);
+            const car = createVehicle(currentLevel.vehicle.x, currentLevel.vehicle.y);
+            Matter.World.add(engine.world, car);
         }
+        if (currentLevel.goal) {
+            const goal = Matter.Bodies.rectangle(currentLevel.goal.x, currentLevel.goal.y, 50, 50, {
+                isStatic: true,
+                isSensor: true,
+                render: { fillStyle: 'gold' }
+            });
+            Matter.World.add(engine.world, goal);
+        }
+    }
+
+    function createVehicle(x, y) {
+        const group = Matter.Body.nextGroup(true);
+        const chassis = Matter.Bodies.rectangle(x, y, 80, 30, {
+            collisionFilter: { group: group },
+            density: 0.002,
+            label: 'car'
+        });
+        const wheelA = Matter.Bodies.circle(x - 35, y + 20, 15, {
+            collisionFilter: { group: group },
+            friction: 0.8
+        });
+        const wheelB = Matter.Bodies.circle(x + 35, y + 20, 15, {
+            collisionFilter: { group: group },
+            friction: 0.8
+        });
+        const axelA = Matter.Constraint.create({
+            bodyB: chassis,
+            pointB: { x: -35, y: 15 },
+            bodyA: wheelA,
+            stiffness: 1,
+            length: 0
+        });
+        const axelB = Matter.Constraint.create({
+            bodyB: chassis,
+            pointB: { x: 35, y: 15 },
+            bodyA: wheelB,
+            stiffness: 1,
+            length: 0
+        });
+
+        const car = Matter.Composite.create({
+            bodies: [chassis, wheelA, wheelB],
+            constraints: [axelA, axelB]
+        });
+
+        Matter.Body.setAngularVelocity(chassis, 0.1);
+        return car;
     }
 
     // Initial load (optional, e.g., start with the pillar)
