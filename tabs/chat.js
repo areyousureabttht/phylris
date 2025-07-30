@@ -48,8 +48,10 @@ function listenForMessages() {
                 }
 
                 messageEl.innerHTML = `
-                    <div class="message-sender">${message.senderName}</div>
-                    <div>${message.text}</div>
+                    <div class="message-content">
+                        <div class="message-sender">${message.senderName}</div>
+                        <div>${message.text}</div>
+                    </div>
                 `;
                 chatMessages.appendChild(messageEl);
             });

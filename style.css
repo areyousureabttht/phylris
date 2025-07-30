@@ -1,206 +1,229 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
 body {
-    font-family: sans-serif;
+    font-family: 'Roboto', sans-serif;
     margin: 0;
-    background-color: #f0f2f5;
+    background-color: #f4f7f6;
+    color: #333;
+}
+
+#auth-container {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
     height: 100vh;
 }
 
-#auth-container, #app-container {
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
+#auth-container h1 {
+    font-size: 3em;
+    color: #4A90E2;
 }
 
-#login-btn, #join-group-btn, #logout-btn {
-    background-color: #4285F4;
+#login-btn {
+    background-color: #4A90E2;
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
+    padding: 15px 30px;
+    border-radius: 25px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 1.2em;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: background-color 0.3s;
+}
+
+#login-btn:hover {
+    background-color: #357ABD;
+}
+
+#app-container {
+    display: none;
+    height: 100vh;
+    width: 100vw;
+}
+
+#group-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
 }
 
 #group-code-input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    box-sizing: border-box;
+    width: 80%;
+    max-width: 300px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 25px;
+    font-size: 1.1em;
+    text-align: center;
+}
+
+#join-group-btn {
+    margin-top: 20px;
+    background-color: #4A90E2;
+    color: white;
+    padding: 12px 25px;
+}
+
+#main-app {
+    display: none;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 #header {
+    background-color: #4A90E2;
+    color: white;
+    padding: 10px 20px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    background-color: #fff;
-    border-bottom: 1px solid #ddd;
-}
-
-#user-info {
-    display: flex;
     align-items: center;
 }
 
 #user-photo {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 10px;
+    width: 45px;
+    height: 45px;
 }
 
 #tabs {
-    display: flex;
-    justify-content: space-around;
     background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .tab-btn {
+    color: #4A90E2;
+    border-bottom: 3px solid #4A90E2;
+}
+
+#tab-content {
     flex-grow: 1;
-    padding: 15px;
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-size: 16px;
-    color: #666;
-    border-bottom: 3px solid transparent;
-}
-
-.tab-btn.active {
-    color: #4285F4;
-    border-bottom-color: #4285F4;
-}
-
-.tab-pane {
-    display: none;
-}
-
-.tab-pane.active {
-    display: block;
-    padding: 10px;
+    overflow-y: auto;
+    padding: 20px;
 }
 
 #chat-messages {
-    height: calc(100vh - 220px);
-    overflow-y: auto;
-    border: 1px solid #ddd;
-    padding: 10px;
-    margin-bottom: 10px;
+    height: calc(100% - 80px);
 }
 
 .message {
-    margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 10px;
-    max-width: 80%;
+    display: flex;
+    margin-bottom: 15px;
 }
 
 .message.own {
-    background-color: #dcf8c6;
-    align-self: flex-end;
-    margin-left: auto;
+    justify-content: flex-end;
 }
 
-.message.other {
-    background-color: #fff;
-    align-self: flex-start;
+.message .message-content {
+    padding: 10px 15px;
+    border-radius: 20px;
+    max-width: 70%;
+}
+
+.message.own .message-content {
+    background-color: #4A90E2;
+    color: white;
+}
+
+.message.other .message-content {
+    background-color: #E5E5EA;
 }
 
 .message-sender {
-    font-weight: bold;
+    font-size: 0.8em;
+    color: #888;
     margin-bottom: 5px;
 }
 
 #chat-input-container {
-    display: flex;
+    padding: 10px 20px;
+    background-color: #fff;
 }
 
 #chat-input {
-    flex-grow: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    border-radius: 20px;
 }
 
 #send-btn {
-    background-color: #4285F4;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-left: 10px;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    padding: 0;
+    background-color: #4A90E2;
 }
 
 #notes-gallery {
-    display: flex;
-    overflow-x: auto;
-    gap: 10px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    min-height: 200px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
 }
 
 .note {
-    position: relative;
-    flex-shrink: 0;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
 }
 
 .note img {
-    width: 150px;
-    height: 150px;
+    width: 100%;
+    height: 120px;
     object-fit: cover;
-    border-radius: 5px;
 }
 
 .note-info {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
-    padding: 5px;
-    font-size: 12px;
+    padding: 10px;
+    font-size: 0.9em;
 }
 
-.delete-note-btn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: rgba(0,0,0,0.7);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
+#upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#upload-container {
+    padding: 20px;
+    background-color: #fff;
+    border-top: 1px solid #eee;
 }
 
 #reminders-list {
-    border: 1px solid #ddd;
-    padding: 10px;
-    margin-bottom: 10px;
-    min-height: 200px;
+    min-height: calc(100% - 100px);
 }
 
 .reminder {
+    background-color: #fff;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     display: flex;
     justify-content: space-between;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
+    align-items: center;
 }
 
-@media (max-width: 600px) {
-    #app-container {
-        max-width: 100%;
-        height: 100vh;
-    }
+#reminder-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
 
-    #chat-messages {
-        height: calc(100vh - 180px);
-    }
+#reminder-title {
+    flex-grow: 1;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    padding: 10px 15px;
+}
+
+#add-reminder-btn {
+    background-color: #4A90E2;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 20px;
+    cursor: pointer;
 }
