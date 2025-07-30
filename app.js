@@ -14,8 +14,6 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 document.addEventListener('DOMContentLoaded', () => {
-    const groupContainer = document.getElementById('group-container');
-    const mainApp = document.getElementById('main-app');
     const loginBtn = document.getElementById('login-btn');
     const logoutBtn = document.getElementById('logout-btn');
     const authContainer = document.getElementById('auth-container');
@@ -52,6 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function showApp(user) {
+        const groupContainer = document.getElementById('group-container');
+        const mainApp = document.getElementById('main-app');
         authContainer.style.display = 'none';
         appContainer.style.display = 'block';
         userPhoto.src = user.photoURL;
@@ -105,6 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showMainApp(groupCode) {
+        console.log('groupContainer:', groupContainer);
+        console.log('mainApp:', mainApp);
         groupContainer.style.display = 'none';
         mainApp.style.display = 'block';
         document.getElementById('group-name').textContent = groupCode;
