@@ -3,36 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Structural Force Visualizer</title>
+    <title>Study Circle</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="simulation-container"></div>
-    <div id="toolbar">
-        <div id="tool-select">
-            <button class="tool-btn" data-tool="wood">Wood</button>
-            <button class="tool-btn" data-tool="steel">Steel</button>
-            <button class="tool-btn" data-tool="road">Road</button>
+    <div id="auth-container">
+        <h1>Study Circle</h1>
+        <p>Your collaborative study space.</p>
+        <button id="login-btn">Login with Google</button>
+    </div>
+
+    <div id="app-container" style="display: none;">
+        <div id="group-container">
+            <input type="text" id="group-code-input" placeholder="Enter Group Code">
+            <button id="join-group-btn">Join or Create Group</button>
         </div>
-        <div id="sim-controls">
-            <button id="simulate-btn">Simulate</button>
-            <button id="reset-btn">Reset</button>
-        </div>
-        <div id="budget-display">
-            Budget: $<span id="budget">10000</span>
-        </div>
-        <div id="levels-container">
-            <h3>Levels</h3>
-            <select id="level-select">
-                <option value="0">Custom</option>
-                <option value="1">Level 1</option>
-                <option value="2">Level 2</option>
-                <option value="3">Level 3</option>
-                <option value="4">Level 4</option>
-            </select>
+
+        <div id="main-app" style="display: none;">
+            <div id="header">
+                <div id="user-info">
+                    <img id="user-photo" src="" alt="User Photo">
+                    <span id="user-name"></span>
+                </div>
+                <button id="logout-btn">Logout</button>
+            </div>
+
+            <div id="tabs">
+                <button class="tab-btn active" data-tab="chat">Chat</button>
+                <button class="tab-btn" data-tab="notes">Notes</button>
+                <button class="tab-btn" data-tab="reminders">Reminders</button>
+            </div>
+
+            <div id="tab-content">
+                <div id="chat-tab" class="tab-pane active">
+                    <div id="chat-messages"></div>
+                    <div id="typing-indicator"></div>
+                    <div id="chat-input-container">
+                        <input type="text" id="chat-input" placeholder="Type a message...">
+                        <button id="send-btn">Send</button>
+                    </div>
+                </div>
+                <div id="notes-tab" class="tab-pane">
+                    <div id="notes-gallery"></div>
+                    <div id="upload-container">
+                        <input type="file" id="note-upload" accept="image/jpeg, image/png">
+                        <button id="upload-btn">Upload Note</button>
+                    </div>
+                </div>
+                <div id="reminders-tab" class="tab-pane">
+                    <div id="reminders-list"></div>
+                    <div id="reminder-form">
+                        <input type="text" id="reminder-title" placeholder="Reminder title">
+                        <input type="date" id="reminder-date">
+                        <button id="add-reminder-btn">Add Reminder</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.17.1/matter.min.js"></script>
-    <script src="script.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <script src="app.js"></script>
+    <script src="utils/compressImage.js"></script>
+    <script src="tabs/chat.js"></script>
+    <script src="tabs/notes.js"></script>
+    <script src="tabs/reminders.js"></script>
 </body>
 </html>
