@@ -17,6 +17,25 @@ function initChat(gc) {
     });
 
     listenForMessages();
+    listenForTyping();
+
+    let typingTimer;
+    chatInput.addEventListener('input', () => {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        if (!typingTimer) {
+            db.collection('groups').doc(groupCode).collection('typing').doc(user.uid).set({
+                name: user.displayName
+            });
+        }
+
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+            db.collection('groups').doc(groupCode).collection('typing').doc(user.uid).delete();
+            typingTimer = null;
+        }, 3000);
+    });
 }
 
 function sendMessage(message) {
@@ -29,6 +48,9 @@ function sendMessage(message) {
         senderPhoto: user.photoURL,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
+
+    // Clear typing indicator
+    db.collection('groups').doc(groupCode).collection('typing').doc(user.uid).delete();
 }
 
 function listenForMessages() {
@@ -48,6 +70,7 @@ function listenForMessages() {
                 }
 
                 messageEl.innerHTML = `
+                    <img class="message-avatar" src="${message.senderPhoto}" alt="${message.senderName}">
                     <div class="message-content">
                         <div class="message-sender">${message.senderName}</div>
                         <div>${message.text}</div>
@@ -63,4 +86,23 @@ function stopListeningForMessages() {
     if (messagesUnsubscribe) {
         messagesUnsubscribe();
     }
+}
+
+function listenForTyping() {
+    const typingIndicator = document.getElementById('typing-indicator');
+    db.collection('groups').doc(groupCode).collection('typing')
+        .onSnapshot(snapshot => {
+            const typingUsers = [];
+            snapshot.forEach(doc => {
+                if (doc.id !== auth.currentUser.uid) {
+                    typingUsers.push(doc.data().name);
+                }
+            });
+
+            if (typingUsers.length > 0) {
+                typingIndicator.textContent = `${typingUsers.join(', ')} is typing...`;
+            } else {
+                typingIndicator.textContent = '';
+            }
+        });
 }

@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         appContainer.style.display = 'block';
         userPhoto.src = user.photoURL;
         userName.textContent = user.displayName;
+        listenForGroups();
     }
 
     function showLogin() {
@@ -103,9 +104,37 @@ document.addEventListener('DOMContentLoaded', () => {
         initReminders(groupCode);
     }
 
-    function showMainApp() {
+    function showMainApp(groupCode) {
         groupContainer.style.display = 'none';
         mainApp.style.display = 'block';
+        document.getElementById('group-name').textContent = groupCode;
+    }
+
+    function listenForGroups() {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        db.collection('groups').where('members', 'array-contains', user.email)
+            .onSnapshot(snapshot => {
+                const groupList = document.getElementById('group-list');
+                const noGroupsMsg = document.getElementById('no-groups-msg');
+                groupList.innerHTML = '';
+                if (snapshot.empty) {
+                    noGroupsMsg.style.display = 'block';
+                } else {
+                    noGroupsMsg.style.display = 'none';
+                    snapshot.forEach(doc => {
+                        const group = doc.data();
+                        const groupEl = document.createElement('div');
+                        groupEl.classList.add('group-item');
+                        groupEl.textContent = doc.id;
+                        groupEl.onclick = () => {
+                            joinOrCreateGroup(doc.id);
+                        };
+                        groupList.appendChild(groupEl);
+                    });
+                }
+            });
     }
 
     const tabButtons = document.querySelectorAll('.tab-btn');

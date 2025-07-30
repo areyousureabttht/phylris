@@ -14,48 +14,60 @@
     </div>
 
     <div id="app-container" style="display: none;">
-        <div id="group-container">
-            <input type="text" id="group-code-input" placeholder="Enter Group Code">
-            <button id="join-group-btn">Join or Create Group</button>
-        </div>
-
-        <div id="main-app" style="display: none;">
-            <div id="header">
-                <div id="user-info">
-                    <img id="user-photo" src="" alt="User Photo">
-                    <span id="user-name"></span>
-                </div>
+        <div id="left-panel">
+            <div id="user-profile">
+                <img id="user-photo" src="" alt="User Photo">
+                <span id="user-name"></span>
                 <button id="logout-btn">Logout</button>
             </div>
-
-            <div id="tabs">
-                <button class="tab-btn active" data-tab="chat">Chat</button>
-                <button class="tab-btn" data-tab="notes">Notes</button>
-                <button class="tab-btn" data-tab="reminders">Reminders</button>
+            <div id="groups-header">
+                <h2>Groups</h2>
             </div>
+            <div id="group-list">
+                <p id="no-groups-msg" style="display: none; text-align: center; padding: 20px; color: var(--light-text-color);">No groups yet. Join or create one below.</p>
+                <!-- List of groups will be populated here -->
+            </div>
+            <div id="group-creation">
+                <input type="text" id="group-code-input" placeholder="Enter Group Code">
+                <button id="join-group-btn">Join or Create</button>
+            </div>
+        </div>
+        <div id="right-panel">
+            <div id="main-app" style="display: none;">
+                <div id="header">
+                    <h2 id="group-name"></h2>
+                </div>
 
-            <div id="tab-content">
-                <div id="chat-tab" class="tab-pane active">
-                    <div id="chat-messages"></div>
-                    <div id="typing-indicator"></div>
-                    <div id="chat-input-container">
-                        <input type="text" id="chat-input" placeholder="Type a message...">
-                        <button id="send-btn">➤</button>
-                    </div>
+                <div id="tabs">
+                    <button class="tab-btn active" data-tab="chat">Chat</button>
+                    <button class="tab-btn" data-tab="notes">Notes</button>
+                    <button class="tab-btn" data-tab="reminders">Reminders</button>
                 </div>
-                <div id="notes-tab" class="tab-pane">
-                    <div id="notes-gallery"></div>
-                    <div id="upload-container">
-                        <input type="file" id="note-upload" accept="image/jpeg, image/png">
-                        <button id="upload-btn">Upload Note</button>
+
+                <div id="tab-content">
+                    <div id="chat-tab" class="tab-pane active">
+                        <div id="chat-messages"></div>
+                        <div id="typing-indicator"></div>
+                        <div id="chat-input-container">
+                            <input type="text" id="chat-input" placeholder="Type a message...">
+                            <button id="send-btn">➤</button>
+                        </div>
                     </div>
-                </div>
-                <div id="reminders-tab" class="tab-pane">
-                    <div id="reminders-list"></div>
-                    <div id="reminder-form">
-                        <input type="text" id="reminder-title" placeholder="Reminder title">
-                        <input type="date" id="reminder-date">
-                        <button id="add-reminder-btn">Add Reminder</button>
+                    <div id="notes-tab" class="tab-pane">
+                        <div id="notes-gallery"></div>
+                        <div id="upload-container">
+                        <input type="text" id="note-text-input" placeholder="Enter a note...">
+                            <input type="file" id="note-upload" accept="image/jpeg, image/png">
+                        <button id="upload-btn">Add Note</button>
+                        </div>
+                    </div>
+                    <div id="reminders-tab" class="tab-pane">
+                        <div id="reminders-list"></div>
+                        <div id="reminder-form">
+                            <input type="text" id="reminder-title" placeholder="Reminder title">
+                            <input type="date" id="reminder-date">
+                            <button id="add-reminder-btn">Add Reminder</button>
+                        </div>
                     </div>
                 </div>
             </div>
