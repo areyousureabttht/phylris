@@ -1,16 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap');
 
 :root {
-    --primary-color: #5b66e3;
-    --secondary-color: #f0f2f5;
+    --primary-color: #6a5af9;
+    --secondary-color: #f2f2f2;
     --text-color: #333;
-    --light-text-color: #888;
+    --light-text-color: #999;
     --white: #fff;
     --border-color: #e0e0e0;
+    --error-color: #f44336;
+}
+
+* {
+    box-sizing: border-box;
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     margin: 0;
     background-color: var(--secondary-color);
     color: var(--text-color);
@@ -22,22 +27,25 @@ body {
     align-items: center;
     justify-content: center;
     height: 100vh;
+    padding: 20px;
 }
 
 #login-btn {
     background-color: var(--primary-color);
     color: var(--white);
     border: none;
-    padding: 15px 30px;
-    border-radius: 25px;
+    padding: 15px 40px;
+    border-radius: 30px;
     cursor: pointer;
     font-size: 1.2em;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: background-color 0.3s;
+    font-weight: 500;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
 }
 
 #login-btn:hover {
-    background-color: #4a55c8;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
 #app-container {
@@ -47,11 +55,25 @@ body {
 }
 
 #left-panel {
-    width: 300px;
+    width: 100%;
     background-color: var(--white);
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
+}
+
+#right-panel {
+    display: none; /* Hidden on mobile */
+}
+
+@media (min-width: 768px) {
+    #left-panel {
+        width: 320px;
+    }
+    #right-panel {
+        display: flex;
+        flex-grow: 1;
+    }
 }
 
 #user-profile {
@@ -82,6 +104,16 @@ body {
     overflow-y: auto;
 }
 
+.group-item {
+    padding: 15px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.group-item:hover {
+    background-color: var(--secondary-color);
+}
+
 #group-creation {
     padding: 20px;
     border-top: 1px solid var(--border-color);
@@ -100,16 +132,18 @@ body {
     margin-top: 10px;
     background-color: var(--primary-color);
     color: var(--white);
+    padding: 12px;
 }
 
-#right-panel {
-    flex-grow: 1;
+#main-app {
+    width: 100%;
     display: flex;
     flex-direction: column;
 }
 
 #header {
-    padding: 20px;
+    background-color: var(--white);
+    padding: 15px 20px;
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -132,78 +166,51 @@ body {
 #chat-messages {
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .message {
-    display: flex;
-    margin-bottom: 20px;
-    align-items: flex-end;
+    max-width: 75%;
+    margin-bottom: 15px;
 }
 
 .message.own {
-    justify-content: flex-end;
-}
-
-.message-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 15px;
-}
-
-.message.own .message-avatar {
-    display: none;
+    align-self: flex-end;
 }
 
 .message-content {
-    padding: 12px 18px;
-    border-radius: 20px;
-    max-width: 60%;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    padding: 10px 15px;
+    border-radius: 18px;
 }
 
 .message.own .message-content {
     background-color: var(--primary-color);
     color: var(--white);
-    border-bottom-right-radius: 5px;
 }
 
 .message.other .message-content {
     background-color: var(--white);
-    color: var(--text-color);
-    border-bottom-left-radius: 5px;
-}
-
-.message-sender {
-    font-weight: 600;
-    margin-bottom: 5px;
-    font-size: 0.9em;
 }
 
 #chat-input-container {
     padding: 10px 20px;
-    background-color: #fff;
+    background-color: var(--white);
     border-top: 1px solid var(--border-color);
 }
 
 #chat-input {
-    border-radius: 20px;
-    border: 1px solid var(--border-color);
-    padding: 10px 15px;
     width: 100%;
-    box-sizing: border-box;
+    border: none;
+    padding: 15px;
+    border-radius: 25px;
+    background-color: var(--secondary-color);
 }
 
 #send-btn {
-    border-radius: 50%;
-    width: 45px;
-    height: 45px;
-    padding: 0;
-    background-color: var(--primary-color);
-    color: var(--white);
+    background: none;
     border: none;
-    margin-left: 10px;
-    cursor: pointer;
+    color: var(--primary-color);
+    font-size: 1.8em;
 }
 
 #notes-gallery {
@@ -213,78 +220,7 @@ body {
 }
 
 .note {
-    background-color: #fff;
+    background-color: var(--white);
     border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    overflow: hidden;
-}
-
-.note img {
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
-}
-
-.note-info {
-    padding: 10px;
-    font-size: 0.9em;
-}
-
-#upload-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    background-color: #fff;
-    border-top: 1px solid #eee;
-}
-
-#reminders-list {
-    min-height: calc(100% - 100px);
-}
-
-.reminder {
-    background-color: #fff;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    padding: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-#reminder-form {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-#reminder-title {
-    flex-grow: 1;
-    border-radius: 20px;
-    border: 1px solid #ccc;
-    padding: 10px 15px;
-}
-
-#add-reminder-btn {
-    background-color: #4A90E2;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    padding: 10px 20px;
-    cursor: pointer;
-}
-
-.reminder-title.completed {
-    text-decoration: line-through;
-    color: var(--light-text-color);
-}
-
-.delete-reminder-btn {
-    background: none;
-    border: none;
-    color: var(--light-text-color);
-    cursor: pointer;
-    font-size: 1.2em;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }

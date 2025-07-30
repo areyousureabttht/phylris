@@ -14,6 +14,8 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 document.addEventListener('DOMContentLoaded', () => {
+    const groupContainer = document.getElementById('group-container');
+    const mainApp = document.getElementById('main-app');
     const loginBtn = document.getElementById('login-btn');
     const logoutBtn = document.getElementById('logout-btn');
     const authContainer = document.getElementById('auth-container');
@@ -64,8 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const joinGroupBtn = document.getElementById('join-group-btn');
     const groupCodeInput = document.getElementById('group-code-input');
-    const groupContainer = document.getElementById('group-container');
-    const mainApp = document.getElementById('main-app');
 
     joinGroupBtn.addEventListener('click', () => {
         const groupCode = groupCodeInput.value.trim();
